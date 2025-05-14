@@ -6,8 +6,8 @@ from contextlib import asynccontextmanager
 from app.database import SessionLocal
 from app.models.user import User
 from app.schemas.user import UserCreate, UserOut
-from app.utils import hash_password, verify_password
-from app.auth.token import create_access_token, decode_access_token
+from app.utils import hash_password, verify_password, create_access_token, verify_token
+
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 
@@ -80,7 +80,7 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depend
 
 # Get current user from token
 def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
-    payload = decode_access_token(token)
+    payload = verify_token(token)
     if not payload:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid or expired token")
 

@@ -4,6 +4,7 @@ from dotenv import load_dotenv
 from passlib.context import CryptContext
 from jose import JWTError, jwt
 from typing import Optional
+from fastapi import HTTPException, status
 
 # Load environment variables
 load_dotenv()
@@ -41,3 +42,14 @@ def decode_access_token(token: str) -> Optional[dict]:
         return jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
     except JWTError:
         return None
+
+# Verify and validate JWT token (used in dependencies)
+def verify_token(token: str) -> dict:
+    payload = decode_access_token(token)
+    if not payload or "sub" not in payload:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Could not validate credentials",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    return payload
